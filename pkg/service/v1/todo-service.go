@@ -12,10 +12,10 @@ import (
 
 const (
 	apiVersion = "v1"
-	deleteToDoQuery="DELETE FROM ToDo WHERE `ID`=?"
-	selectOneQuery="SELECT * FROM ToDo WHERE `ID`=?"
-	insertToDoQuery="INSERT INTO ToDo(`Title`, `Description`, `Order`) VALUES(?, ?, ?)"
-	updateToDoQuery="UPDATE ToDo SET `Title`=?, `Description`=?, `Order`=? WHERE `ID`=?"
+	deleteToDoQuery="DELETE FROM todolists WHERE `id`=?"
+	selectOneQuery="SELECT * FROM todolists WHERE `id`=?"
+	insertToDoQuery="INSERT INTO todolists(`title`, `description`, `order`) VALUES(?, ?, ?)"
+	updateToDoQuery="UPDATE todolists SET `title`=?, `description`=?, `order`=? WHERE `id`=?"
 )
 
 // toDoServiceServer struct
@@ -177,7 +177,7 @@ func (s *toDoServiceServer) ReadAll(ctx context.Context, req *v1.ReadAllRequest)
 		return nil, err
 	}
 	defer c.Close()
-	rows, err := c.QueryContext(ctx, "SELECT * FROM ToDo")
+	rows, err := c.QueryContext(ctx, "SELECT * FROM todolists")
 	if err != nil {
 		return nil, status.Error(codes.Unknown, "Failed to select from ToDo->" + err.Error())
 	}
