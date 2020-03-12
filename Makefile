@@ -1,6 +1,7 @@
 # Go parameters
 GOCMD=go
-GOBUILD=$(GOCMD) build GOCLEAN=$(GOCMD) clean
+GOBUILD=$(GOCMD) build 
+GOCLEAN=$(GOCMD) clean
 GOTEST=$(GOCMD) test
 GOGET=$(GOCMD) get
 BINARY_NAME= server
@@ -16,9 +17,9 @@ test:
 	$(GOTEST) -v 
 clean:
 	$(CD_CMD_SERVER) &&\
-	$(GOCLEAN) &&\
+	$(GOCLEAN);
 	rm -f $(BINARY_NAME) &&\
-	rm -f $(BINARY_UNIX) &&\
+	rm -f $(BINARY_UNIX)
 build-linux:
 	$(CD_CMD_SERVER) &&\
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(GOBUILD) -o $(BINARY_UNIX) -v
