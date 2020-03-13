@@ -11,11 +11,11 @@ import (
 )
 
 const (
-	apiVersion = "v1"
-	deleteToDoQuery="DELETE FROM todolists WHERE `id`=?"
-	selectOneQuery="SELECT * FROM todolists WHERE `id`=?"
-	insertToDoQuery="INSERT INTO todolists(`title`, `description`, `order`) VALUES(?, ?, ?)"
-	updateToDoQuery="UPDATE todolists SET `title`=?, `description`=?, `order`=? WHERE `id`=?"
+	apiVersion      = "v1"
+	deleteToDoQuery = "DELETE FROM todolists WHERE `id`=?"
+	selectOneQuery  = "SELECT * FROM todolists WHERE `id`=?"
+	insertToDoQuery = "INSERT INTO todolists(`title`, `description`, `order`) VALUES(?, ?, ?)"
+	updateToDoQuery = "UPDATE todolists SET `title`=?, `description`=?, `order`=? WHERE `id`=?"
 )
 
 // toDoServiceServer struct
@@ -42,10 +42,10 @@ func (s *toDoServiceServer) checkAPI(api string) error {
 	return nil
 }
 
-// connect database context 
+// connect database context
 func (s *toDoServiceServer) connect(ctx context.Context) (*sql.Conn, error) {
 	c, err := s.db.Conn(ctx)
-	if  err != nil {
+	if err != nil {
 		return nil, status.Error(codes.Unknown, "Failed to connect to database -> "+err.Error())
 	}
 	return c, nil
@@ -65,15 +65,15 @@ func (s *toDoServiceServer) Create(ctx context.Context, req *v1.CreateRequest) (
 
 	res, err := c.ExecContext(ctx, insertToDoQuery, req.ToDo.Title, req.ToDo.Description, req.ToDo.Order)
 	if err != nil {
-		return nil, status.Error(codes.Unknown, "Failed to insert into ToDo -> " + err.Error())
+		return nil, status.Error(codes.Unknown, "Failed to insert into ToDo -> "+err.Error())
 	}
 	id, err := res.LastInsertId()
 	if err != nil {
-		return nil, status.Error(codes.Unknown, "Failed to retrieved id for created todo -> " + err.Error())
+		return nil, status.Error(codes.Unknown, "Failed to retrieved id for created todo -> "+err.Error())
 	}
 	return &v1.CreateResponse{
 		Api: apiVersion,
-		Id: id,
+		Id:  id,
 	}, nil
 }
 
@@ -89,25 +89,25 @@ func (s *toDoServiceServer) Read(ctx context.Context, req *v1.ReadRequest) (*v1.
 	defer c.Close()
 	rows, err := c.QueryContext(ctx, selectOneQuery, req.Id)
 	if err != nil {
-		return nil, status.Error(codes.Unknown, "Failed to select from Todo -> " + err.Error())
+		return nil, status.Error(codes.Unknown, "Failed to select from Todo -> "+err.Error())
 	}
 	defer rows.Close()
 	if !rows.Next() {
 		if err := rows.Err(); err != nil {
-			return nil, status.Error(codes.Unknown, "Failed to retrieve data from ToDo -> " + err.Error())
+			return nil, status.Error(codes.Unknown, "Failed to retrieve data from ToDo -> "+err.Error())
 		}
 		return nil, status.Error(codes.NotFound, fmt.Sprintf("ToDo with ID='%d' is not found", req.Id))
 	}
 
 	var td v1.ToDo
 	if err := rows.Scan(&td.Id, &td.Title, &td.Description, &td.Order); err != nil {
-		return nil, status.Error(codes.Unknown, "Failed to retrieve field value from ToDo row -> " + err.Error())
+		return nil, status.Error(codes.Unknown, "Failed to retrieve field value from ToDo row -> "+err.Error())
 	}
 	if rows.Next() {
 		return nil, status.Error(codes.Unknown, fmt.Sprintf("Found multiple ToDo rows with Id='%d'", req.Id))
 	}
 	return &v1.ReadResponse{
-		Api: apiVersion,
+		Api:  apiVersion,
 		ToDo: &td,
 	}, nil
 }
@@ -124,18 +124,18 @@ func (s *toDoServiceServer) Update(ctx context.Context, req *v1.UpdateRequest) (
 	defer c.Close()
 	res, err := c.ExecContext(ctx, updateToDoQuery, req.ToDo.Title, req.ToDo.Description, req.ToDo.Order, req.ToDo.Id)
 	if err != nil {
-		return nil, status.Error(codes.Unknown, "Failed to update ToDo -> " + err.Error())
+		return nil, status.Error(codes.Unknown, "Failed to update ToDo -> "+err.Error())
 	}
 	rows, err := res.RowsAffected()
 	if err != nil {
-		return nil, status.Error(codes.Unknown, "Failed to retrieve rows affected -> " + err.Error())
+		return nil, status.Error(codes.Unknown, "Failed to retrieve rows affected -> "+err.Error())
 	}
 	if rows == 0 {
 		return nil, status.Error(codes.NotFound, fmt.Sprintf("ToDo with Id='%d' is not found", req.ToDo.Id))
 	}
 
 	return &v1.UpdateResponse{
-		Api: apiVersion,
+		Api:     apiVersion,
 		Updated: rows,
 	}, nil
 }
@@ -147,22 +147,22 @@ func (s *toDoServiceServer) Delete(ctx context.Context, req *v1.DeleteRequest) (
 	}
 	c, err := s.connect(ctx)
 	if err != nil {
-		 return nil, err
+		return nil, err
 	}
 	defer c.Close()
 	res, err := c.ExecContext(ctx, deleteToDoQuery, req.Id)
 	if err != nil {
-		return nil, status.Error(codes.Unknown, "Failed to delete ToDo -> " + err.Error())
+		return nil, status.Error(codes.Unknown, "Failed to delete ToDo -> "+err.Error())
 	}
 	rows, err := res.RowsAffected()
 	if err != nil {
-		return nil, status.Error(codes.Unknown, "Failed to retrieve rows affected value -> " + err.Error())
+		return nil, status.Error(codes.Unknown, "Failed to retrieve rows affected value -> "+err.Error())
 	}
 	if rows == 0 {
 		return nil, status.Error(codes.NotFound, fmt.Sprintf("ToDo with Id='%d' is not found", req.Id))
 	}
 	return &v1.DeleteResponse{
-		Api: apiVersion,
+		Api:     apiVersion,
 		Deleted: rows,
 	}, nil
 }
@@ -179,22 +179,22 @@ func (s *toDoServiceServer) ReadAll(ctx context.Context, req *v1.ReadAllRequest)
 	defer c.Close()
 	rows, err := c.QueryContext(ctx, "SELECT * FROM todolists")
 	if err != nil {
-		return nil, status.Error(codes.Unknown, "Failed to select from ToDo->" + err.Error())
+		return nil, status.Error(codes.Unknown, "Failed to select from ToDo->"+err.Error())
 	}
 	defer rows.Close()
 	list := []*v1.ToDo{}
 	for rows.Next() {
 		td := new(v1.ToDo)
 		if err := rows.Scan(&td.Id, &td.Title, &td.Description, &td.Order); err != nil {
-			return nil, status.Error(codes.Unknown, "Failed to retrieve field value from ToDo row -> " + err.Error())
+			return nil, status.Error(codes.Unknown, "Failed to retrieve field value from ToDo row -> "+err.Error())
 		}
 		list = append(list, td)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, status.Error(codes.Unknown, "Failed to retrieve data from ToDo->" + err.Error())
+		return nil, status.Error(codes.Unknown, "Failed to retrieve data from ToDo->"+err.Error())
 	}
 	return &v1.ReadAllResponse{
-		Api: apiVersion,
+		Api:   apiVersion,
 		ToDos: list,
 	}, nil
 }
